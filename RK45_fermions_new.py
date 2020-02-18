@@ -130,9 +130,6 @@ dum0 = np.complex(0,k*up0 + a(0)*M(0)*um0)
 #dup0 = np.complex(0,k*um0 - mX*up0)  ########################
 #dum0 = np.complex(0,k*up0 + mX*um0)  ########################
 
-
-
-
 #calculate solutions using RK45 method
 sol_p = solve_ivp(d2up, [0,tmax], np.array([up0,dup0]), t_eval=t_eval, method='RK45',max_step=h_max) ############# tmax
 sol_m = solve_ivp(d2um, [0,tmax], np.array([um0,dum0]), t_eval=t_eval, method='RK45',max_step=h_max)  ############# tmax
@@ -147,15 +144,34 @@ ums = sol_m.y
 [up,dup]=ups
 [um,dum]=ums
 
+
+
+###################################################
+#########TEST######################################
+#exact solutions for up,um,E,F,alpha and beta
+up_ex = []
+um_ex = []
+for l in range(len(t_eval)):
+    ti = t_eval[l]
+    up_ex.append(np.sqrt(1 - mX/om(k,ti))*np.exp(np.complex(0,om(k,ti)*ti)))
+    um_ex.append(np.sqrt(1 + mX/om(k,ti))*np.exp(np.complex(0,om(k,ti)*ti)))
+
+up_ex = np.asarray(up_ex)
+um_ex = np.asarray(um_ex)
+
+######################################################
+######################################################
+
+
 #now plot the solutions
 fig = plt.figure(figsize=(19.20,10.80))
 
 plt.plot(tps,up, color='olive', linewidth=4)
 plt.plot(tms,um, color='darkblue', linewidth=4)
 #########TEST############
-#plt.plot(t_eval,up_ex,'--', color='brown', linewidth=4)
-#plt.plot(t_eval,um_ex,'--', color='teal', linewidth=4)
-#plt.legend([r'Re($u_{+} (k)$)', r'Re($u_{-} (k)$)',r'Re($u^{ex}_{+} (k)$)', r'Re($u^{ex}_{-} (k)$)'],loc='upper right')
+plt.plot(t_eval,up_ex,'--', color='brown', linewidth=4)
+plt.plot(t_eval,um_ex,'--', color='teal', linewidth=4)
+plt.legend([r'Re($u_{+} (k)$)', r'Re($u_{-} (k)$)',r'Re($u^{ex}_{+} (k)$)', r'Re($u^{ex}_{-} (k)$)'],loc='upper right')
 ########################
 #plt.legend([r'Re($u_{+} (k)$)', r'Re($u_{-} (k)$)'],loc='upper right')
 plt.xlabel(r'$\eta (m^{-1})$')
