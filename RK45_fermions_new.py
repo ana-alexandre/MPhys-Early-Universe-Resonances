@@ -16,8 +16,8 @@ mX = 10  #mass of fermion
 gphi0 = 100   #constant
 m = 10 #frequency of inflaton oscillations
 tmax = 40*2*np.pi/np.sqrt(k**2+mX**2)   #large time, equivalent to the +/- infinity limit
-tosc_st = np.pi/m * (1/2 + 1)  
-tosc = np.pi/m * (1/2 + 4)  #om2 oscillates between -tosc and +tosc (otherwise it is constant)
+tosc_st = np.pi/m * (1/2 + 8)  
+tosc = np.pi/m * (1/2 + 9)  #om2 oscillates between -tosc and +tosc (otherwise it is constant)
 h_max = 1/(100*max([k,mX,m]))  #step size adjusted to the largest frequency in the system
 no_points = tmax/h_max
 #########################################
@@ -105,14 +105,14 @@ plt.show()
 def d2up(t,up2):
     up = up2[0]
     dup = up2[1]
-    ddup = -om(k,t) * up  #######################
+    ddup = -om(k,t)**2 * up  #######################
     return np.array([dup,ddup])
 
 #function to calculate derivatives for um
 def d2um(t,um2):
     um = um2[0]
     dum = um2[1]
-    ddum = -om(k,t) * um ########################
+    ddum = -om(k,t)**2 * um ########################
     return np.array([dum,ddum])
 
 #create an array with all the points where I would like to save something
@@ -123,6 +123,15 @@ up0 = np.complex(np.sqrt(1 - a(0)*M(0)/om(k,0)),0)
 um0 = np.complex(np.sqrt(1 + a(0)*M(0)/om(k,0)),0)
 dup0 = np.complex(0,k*um0 - a(0)*M(0)*up0)
 dum0 = np.complex(0,k*up0 + a(0)*M(0)*um0)
+
+#set initial conditions
+#up0 = np.complex(np.sqrt(1 - mX/np.sqrt(k**2 + mX**2)),0) ###########################
+#um0 = np.complex(np.sqrt(1 + mX/np.sqrt(k**2 + mX**2)),0) ##########################
+#dup0 = np.complex(0,k*um0 - mX*up0)  ########################
+#dum0 = np.complex(0,k*up0 + mX*um0)  ########################
+
+
+
 
 #calculate solutions using RK45 method
 sol_p = solve_ivp(d2up, [0,tmax], np.array([up0,dup0]), t_eval=t_eval, method='RK45',max_step=h_max) ############# tmax
