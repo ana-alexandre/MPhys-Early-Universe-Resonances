@@ -15,7 +15,7 @@ k = 100  #momentum of fourier mode
 mX = 10  #mass of fermion
 gphi0 = 100   #constant
 m = 10 #frequency of inflaton oscillations
-tmax = 40*2*np.pi/np.sqrt(k**2+mX**2)   #large time, equivalent to the +/- infinity limit
+tmax = 4*2*np.pi/np.sqrt(k**2+mX**2)   #large time, equivalent to the +/- infinity limit
 tosc_st = np.pi/m * (1/2 + 8)  
 tosc = np.pi/m * (1/2 + 9)  #om2 oscillates between -tosc and +tosc (otherwise it is constant)
 h_max = 1/(100*max([k,mX,m]))  #step size adjusted to the largest frequency in the system
@@ -179,7 +179,7 @@ plt.xlabel(r'$\eta (m^{-1})$')
 #plt.xlim(0,tosc_st)
 #plt.ylim(-35000,35000)
 plt.tight_layout()
-#fig.savefig(root+'re_up_um.png')
+fig.savefig(root+'re_up_um_test.png')
 plt.show()
 
 
