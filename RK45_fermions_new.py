@@ -15,9 +15,9 @@ k = 100  #momentum of fourier mode
 mX = 10  #mass of fermion
 gphi0 = 100   #constant
 m = 10 #frequency of inflaton oscillations
-tmax = 4*2*np.pi/np.sqrt(k**2+mX**2)   #large time, equivalent to the +/- infinity limit
-tosc_st = np.pi/m * (1/2 + 8)  
-tosc = np.pi/m * (1/2 + 9)  #om2 oscillates between -tosc and +tosc (otherwise it is constant)
+tmax = 20*2*np.pi/np.sqrt(k**2+mX**2)   #large time, equivalent to the +/- infinity limit
+tosc_st = np.pi/m * (1/2 + 0)  
+tosc = np.pi/m * (1/2 + 2)  #om2 oscillates between -tosc and +tosc (otherwise it is constant)
 h_max = 1/(100*max([k,mX,m]))  #step size adjusted to the largest frequency in the system
 no_points = tmax/h_max
 #########################################
@@ -105,14 +105,16 @@ plt.show()
 def d2up(t,up2):
     up = up2[0]
     dup = up2[1]
-    ddup = -om(k,t)**2 * up  #######################
+#    ddup = -om(k,t)**2 * up  #######################
+    ddup = -(om(k,t)**2 +np.complex(0,M(t)*dt_a(t) + dt_M(t)*a(t)))*up
     return np.array([dup,ddup])
 
 #function to calculate derivatives for um
 def d2um(t,um2):
     um = um2[0]
     dum = um2[1]
-    ddum = -om(k,t)**2 * um ########################
+#    ddum = -om(k,t)**2 * um ########################
+    ddum = -(om(k,t)**2 +np.complex(0,-M(t)*dt_a(t) - dt_M(t)*a(t)))*um
     return np.array([dum,ddum])
 
 #create an array with all the points where I would like to save something
@@ -153,8 +155,8 @@ up_ex = []
 um_ex = []
 for l in range(len(t_eval)):
     ti = t_eval[l]
-    up_ex.append(np.sqrt(1 - mX/om(k,ti))*np.exp(np.complex(0,om(k,ti)*ti)))
-    um_ex.append(np.sqrt(1 + mX/om(k,ti))*np.exp(np.complex(0,om(k,ti)*ti)))
+    up_ex.append(np.sqrt(1 - mX/om(k,0))*np.exp(np.complex(0,om(k,0)*ti)))
+    um_ex.append(np.sqrt(1 + mX/om(k,0))*np.exp(np.complex(0,om(k,0)*ti)))
 
 up_ex = np.asarray(up_ex)
 um_ex = np.asarray(um_ex)
