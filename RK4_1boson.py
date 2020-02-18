@@ -9,43 +9,55 @@ import matplotlib.pyplot as plt
 
 
 #define all the constants needed
-k = 0.05  #momentum of fourier mode
-m = 1  #mass of boson
-f = 0.5  #constant
-Om = 1   #frequency of oscillations of omega^2
-tmax = 100   #large time, equivalent to the +/- infinity limit
-tosc = 3*np.pi/Om   #om2 oscillates between -tosc and +tosc (otherwise it is constant)
-h=1  #step size
+k = 1  #momentum of fourier mode
+m = 0  #mass of boson
+f = 1/2  #constant
+Om = 3/4   #frequency of oscillations of omega^2
+tmax = 80   #large time, equivalent to the +/- infinity limit
+tosc = 8*np.pi/Om   #om2 oscillates between -tosc and +tosc (otherwise it is constant)
+h = 1/(10*Om)  #step size
 
 root = 'boson_k'+str(k)+'_m'+str(m)+'_f'+str(f)+'_Om'+str(Om)+'_tosc'+str(tosc)+'_'
 
 #define the omega^2 function
+#def om2(k,t):
+ #   if (t >= - tmax and t < - tosc) or (t > tosc and t <= tmax):
+  #      om2 = k**2 + (m + f * np.cos(Om*tosc))**2   #omega is constant
+   #     return om2
+   # elif t > - tosc and t < tosc:
+   #     om2 = k**2 + (m + f * np.cos(Om*t))**2  #omega is oscillating
+   #     return om2
+   # else:
+   #     print('ERROR: Omega is not defined for the value of t of ',t)
+
+
+#####################
+###########TEST#################
+#define the omega^2 function
 def om2(k,t):
-    if (t >= - tmax and t < - tosc) or (t > tosc and t <= tmax):
-        om2 = k**2 + (m + f * np.cos(Om*tosc))**2   #omega is constant
-        return om2
-    elif t > - tosc and t < tosc:
-        om2 = k**2 + (m + f * np.cos(Om*t))**2  #omega is oscillating
-        return om2
-    else:
-        print('ERROR: Omega is not defined for the value of t, of ',t)
+    #om2 = k**2 + (m + f * np.cos(Om*tosc))**2   #omega is constant
+    om2 = 1.1
+    return om2
+#############################
+
+
 
 #plot the frequency
 om_sq = []
 time = []
 t = -tmax 
-#for i in range(2*tmax):
- #   om_sq.append(om2(k,t))
- #   time.append(t)
- #   t += 1
+for i in range(2*tmax):
+    om_sq.append(om2(k,t))
+    time.append(t)
+    t += 1
 
 fig = plt.figure()
 
-#plt.plot(time,om_sq,color='teal', linewidth=2)
-#plt.xlabel('t')
-#plt.ylabel('$\omega^{2}$')
-#fig.savefig(root+'om2.png')
-#plt.show()
+plt.plot(time,om_sq,color='teal', linewidth=2)
+plt.xlabel('t')
+plt.ylabel('$\omega^{2}$')
+fig.savefig(root+'om2.png')
+plt.show()
 
 #set initial conditions
 phi0 = 1/np.sqrt(2*om2(k,-tmax))  #initial condition for phi+
@@ -77,16 +89,39 @@ phi=np.array([phi0,dphi0])  # starting value for phi and dtphi
 t = -tmax   # starting value for t
 ts=np.array([t])     # to store all times
 phis=np.array([phi])     # and all solution points
-
+betas = np.array([0])
+betas2 = np.array([0])
+alphas2 = np.array([1])
 
 #calculate phi with rk4 method
 for i in range(int(2*tmax/h)):  # take enough steps (or so)
-    #print('\nPhi: ',phi,'\nShape: ',phi.shape,'\nPhi[0].shape ',phi[0].shape,'\tPhi[1].shape: ',phi[1].shape)
-    
     (t,phi)=rk4(phi,k,t,h)
-    if i % 10 == 0:
+    
+    #now calculate the Bogoliubov coefficients, beta* and alpha 
+    #ignore complex exponential factor, since we are only interested in the square of the alpha and beta
+    beta_star = np.sqrt(om2(k,t)/2)*(phi[0] - phi[1]/np.complex(0,om2(k,t)))
+    alpha = np.sqrt(om2(k,t)/2)*(phi[0] + phi[1]/np.complex(0,om2(k,t)))
+
+    #now calculate alpha and beta squared by taking the product with the complex conjugate
+    beta = np.conj(beta_star)
+    alpha_star = np.conj(alpha)
+    beta2 = beta_star * beta
+    alpha2 = alpha_star * alpha
+
+    #calculate the difference between alpha squared and beta squared
+    #which should equal 1
+    dif = alpha2 - beta2
+    
+    if i % 100 == 0:
         print(t,': \t phi(t): ',phi[0], '\t dphi(t): ',phi[1])
+        print('\n \t beta*: ',beta_star, '\t beta^2: ',beta2)
+        print('\n \t alpha2 - beta2: ',dif)
+    
+    #append all the important data to arrays
     ts=np.append(ts,t)
+    betas = np.append(betas,beta_star)
+    betas2 = np.append(betas2,beta2)
+    alphas2 = np.append(alphas2,alpha)
     phis=np.concatenate((phis,np.array([phi])))
 
 
@@ -134,33 +169,22 @@ fig.savefig(root+'im_phi_dphi.png')
 plt.show()
 
 #plot the squares of phi and dphi against t
-fig = plt.figure()
+#fig = plt.figure()
 
-plt.plot(ts,phi2, color='olive', linewidth=1)
-plt.plot(ts,dphi2,'--', color='darkblue', linewidth=1)
-plt.legend([r'$|\varphi |^{2}$', r'$|\partial_{t} \varphi |^{2}$'],loc='upper right')
-plt.xlabel('t')
-fig.savefig(root+'sq_phi_dphi.png')
-plt.show()
+#plt.plot(ts,phi2, color='olive', linewidth=1)
+#plt.plot(ts,dphi2,'--', color='darkblue', linewidth=1)
+#plt.legend([r'$|\varphi |^{2}$', r'$|\partial_{t} \varphi |^{2}$'],loc='upper right')
+#plt.xlabel('t')
+#fig.savefig(root+'sq_phi_dphi.png')
+#plt.show()
 
-
-#############
-#now calculate the Bogoliubov coefficients
-beta_star = []
-for i in range(2*tmax + 1):
-#    beta_star.append(np.sqrt(2 * np.sqrt(om2(k,tmax)))/2 * np.exp(np.complex(0,om2(k,tmax)*ts[i]))*(phi[i] - dphi[i]/np.complex(0,om2(k,tmax))))
-    beta_star.append(np.exp(np.complex(0,om2(k,tmax)*ts[i]))*(phi[i] - dphi[i]/np.complex(0,om2(k,tmax))))
-beta = np.conj(beta_star)
-beta2 = beta_star * beta
-
-print (r'Final $|\beta|^{2}$: ', beta2[2*tmax])
-
+print (r'Final $|\beta|^{2}$: ', betas2[2*tmax])
 
 #plot the squares of beta against t
 fig = plt.figure()
 
-plt.plot(ts,beta2, color='teal', linewidth=1)
-plt.scatter(ts,beta2, color='darkblue', linewidth=1)
+plt.plot(ts,betas2, color='teal', linewidth=1)
+plt.scatter(ts,betas2, color='darkblue', linewidth=0.5)
 plt.xlabel('t')
 plt.ylabel(r'$|\beta|^{2}$')
 fig.savefig(root+'sq_beta.png')
