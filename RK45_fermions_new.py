@@ -22,6 +22,9 @@ h_max = 1/(100*max([k,mX,m]))  #step size adjusted to the largest frequency in t
 no_points = tmax/h_max
 #########################################
 
+root = 'fermion_k'+str(k)+'_mX'+str(mX)+'_gphi0'+str(gphi0)+'_m'+str(m)+'_tosc'+str(tosc)+'_'+'_tosc_st'+str(tosc_st)+'_'
+
+
 #define the scale factor a of the universe
 def a(t):
     if t <= tmax:
@@ -102,25 +105,24 @@ plt.show()
 def d2up(t,up2):
     up = up2[0]
     dup = up2[1]
-    ddup = -(k**2 + mX**2) * up  #######################
+    ddup = -om(k,t) * up  #######################
     return np.array([dup,ddup])
 
 #function to calculate derivatives for um
 def d2um(t,um2):
     um = um2[0]
     dum = um2[1]
-    ddum = - (k**2 + mX**2) * um ########################
+    ddum = -om(k,t) * um ########################
     return np.array([dum,ddum])
 
 #create an array with all the points where I would like to save something
 #t_eval = np.linspace(0,tmax,no_points)
 
 #set initial conditions
-up0 = np.complex(np.sqrt(1 - mX/np.sqrt(k**2 + mX**2)),0) ###########################
-um0 = np.complex(np.sqrt(1 + mX/np.sqrt(k**2 + mX**2)),0) ##########################
-dup0 = np.complex(0,k*um0 - mX*up0)  ########################
-dum0 = np.complex(0,k*up0 + mX*um0)  ########################
-
+up0 = np.complex(np.sqrt(1 - a(0)*M(0)/om(k,0)),0)
+um0 = np.complex(np.sqrt(1 + a(0)*M(0)/om(k,0)),0)
+dup0 = np.complex(0,k*um0 - a(0)*M(0)*up0)
+dum0 = np.complex(0,k*up0 + a(0)*M(0)*um0)
 
 #calculate solutions using RK45 method
 sol_p = solve_ivp(d2up, [0,tmax], np.array([up0,dup0]), t_eval=t_eval, method='RK45',max_step=h_max) ############# tmax
