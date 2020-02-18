@@ -1,0 +1,5 @@
+#File extensions
+
+#don't save results
+*.txt
+*.png
