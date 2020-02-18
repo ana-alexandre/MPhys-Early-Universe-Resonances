@@ -105,7 +105,6 @@ plt.show()
 def d2up(t,up2):
     up = up2[0]
     dup = up2[1]
-#    ddup = -om(k,t)**2 * up  #######################
     ddup = -(om(k,t)**2 +np.complex(0,M(t)*dt_a(t) + dt_M(t)*a(t)))*up
     return np.array([dup,ddup])
 
@@ -113,7 +112,6 @@ def d2up(t,up2):
 def d2um(t,um2):
     um = um2[0]
     dum = um2[1]
-#    ddum = -om(k,t)**2 * um ########################
     ddum = -(om(k,t)**2 +np.complex(0,-M(t)*dt_a(t) - dt_M(t)*a(t)))*um
     return np.array([dum,ddum])
 
@@ -126,15 +124,9 @@ um0 = np.complex(np.sqrt(1 + a(0)*M(0)/om(k,0)),0)
 dup0 = np.complex(0,k*um0 - a(0)*M(0)*up0)
 dum0 = np.complex(0,k*up0 + a(0)*M(0)*um0)
 
-#set initial conditions
-#up0 = np.complex(np.sqrt(1 - mX/np.sqrt(k**2 + mX**2)),0) ###########################
-#um0 = np.complex(np.sqrt(1 + mX/np.sqrt(k**2 + mX**2)),0) ##########################
-#dup0 = np.complex(0,k*um0 - mX*up0)  ########################
-#dum0 = np.complex(0,k*up0 + mX*um0)  ########################
-
 #calculate solutions using RK45 method
-sol_p = solve_ivp(d2up, [0,tmax], np.array([up0,dup0]), t_eval=t_eval, method='RK45',max_step=h_max) ############# tmax
-sol_m = solve_ivp(d2um, [0,tmax], np.array([um0,dum0]), t_eval=t_eval, method='RK45',max_step=h_max)  ############# tmax
+sol_p = solve_ivp(d2up, [0,tmax], np.array([up0,dup0]), t_eval=t_eval, method='RK45',max_step=h_max)
+sol_m = solve_ivp(d2um, [0,tmax], np.array([um0,dum0]), t_eval=t_eval, method='RK45',max_step=h_max)
 
 #the time and functions
 tps = sol_p.t
@@ -145,8 +137,6 @@ ums = sol_m.y
 #transpose the final matrix to get the values of phi and dphi
 [up,dup]=ups
 [um,dum]=ums
-
-
 
 ###################################################
 #########TEST######################################
@@ -190,13 +180,162 @@ up_star = np.conj(up)
 um_star = np.conj(um)
 
 
+#now calculate E(k,t) and F(k,t) in the Hamiltonian
+E = k*(up_star*um).real + a_fct*M_fct*(1 - up_star * up)
+F = k * (up**2 - um**2)/2 + a_fct*M_fct*up*um
+F_star = np.conj(F)
 
 
+#check algth by seeing if E^2+F^2=omega^2
+Esum = E**2 + F*F_star
+Erat = Esum/(om_fct**2)
+
+Erat_mean = np.mean(Erat)
+Erat_std = np.std(Erat)
+
+print('\n<E2 + F2/omega> = ', Erat_mean)
+print('\nE2 + F2/omega^2 = ',Erat)
 
 
+#calculate Bogoliubov coefficients
+beta2 = F*F_star / (2*om_fct*(E + om_fct))
+alpha2 = (om_fct + E)/(2*om_fct)
+
+log_n = np.log(beta2)
+
+print('\nbeta^2 = ',beta2)
 
 
+#calculate the difference between alpha squared and beta squared
+#which should equal 1
+summ = alpha2 + beta2
+summ_mean = np.mean(summ)
+summ_std = np.std(summ)
 
+print('\n<alpha2 + beta2> = ', summ_mean, ' +/- ', summ_std)
+print('\nalpha2 + beta2 = ', summ)
+
+
+#########################################################
+#                          PLOTS
+#########################################################
+
+#now plot the solutions
+fig = plt.figure(figsize=(19.20,10.80))
+
+plt.plot(tps,up, color='olive', linewidth=4)
+plt.plot(tms,um, color='darkblue', linewidth=4)
+plt.legend([r'Re($u_{+} (k)$)', r'Re($u_{-} (k)$)'],loc='upper right')
+plt.xlabel(r'$\eta (m^{-1})$')
+#plt.xlim(0,tosc_st)
+#plt.ylim(-35000,35000)
+plt.tight_layout()
+fig.savefig(root+'re_up_um_test.png')
+plt.show()
+
+#plot up and dup against t
+fig = plt.figure(figsize=(19.20,10.80))
+
+plt.plot(tps,dup, color='olive', linewidth=4)
+plt.plot(tms,dum,'--', color='darkblue', linewidth=4)
+plt.legend([r'Re($\dot{u}_{+} (k)$)', r'Re($\dot{u}_{-} (k)$)'],loc='upper right')
+plt.xlabel(r'$\eta (m^{-1})$')
+#plt.ylabel(r'Re($\varphi_k$)')
+#plt.xlim(-1,2*tosc+10)
+#plt.ylim(-35000,35000)
+plt.tight_layout()
+fig.savefig(root+'re_dum_dup.png')
+plt.show()
+
+#plot imaginary part of up and dup against t
+fig = plt.figure(figsize=(19.20,10.80))
+
+plt.plot(tps,up.imag, color='olive', linewidth=4)
+plt.plot(tms,um.imag,'--', color='darkblue', linewidth=4)
+plt.legend([r'Im($u_{+} (k)$)', r'Im(${u}_{-} (k)$)'],loc='upper right')
+plt.xlabel(r'$\eta (m^{-1})$')
+#plt.xlim(-1,2*tosc+10)
+#plt.ylim(-35000,35000)
+plt.tight_layout()
+fig.savefig(root+'im_up_dup.png')
+plt.show()
+
+#plot um and dum against t
+fig = plt.figure(figsize=(19.20,10.80))
+
+plt.plot(tps,dup.imag, color='olive', linewidth=4)
+plt.plot(tms,dum.imag,'--', color='darkblue', linewidth=4)
+plt.legend([r'Im($\dot{u}_{+} (k)$)', r'Im($\dot{u}_{-} (k)$)'],loc='upper right')
+plt.xlabel(r'$\eta (m^{-1})$')
+#plt.xlim(-1,2*tosc+10)
+#plt.ylim(-35000,35000)
+plt.tight_layout()
+fig.savefig(root+'im_um_dum.png')
+plt.show()
+
+#plot omega
+fig = plt.figure()
+
+plt.plot(tps,Erat,color='teal', linewidth=2)
+#plt.xlim(0,tosc_st)
+plt.xlabel('t')
+plt.ylabel(r'$\frac{E_k^2 + |F_k|^2}{\omega_k^2}$')
+fig.savefig(root+'Erat.png')
+plt.show()
+
+#plot E and omega against t
+fig = plt.figure(figsize=(19.20,10.80))
+
+plt.plot(tps,E, color='darkblue', linewidth=4)
+plt.plot(tps,F, color='teal', linewidth=4)
+plt.plot(tps,om_fct,'--', color='olive', linewidth=4)
+plt.legend([r'$E$',r'Re$(F)$', r'$\omega$'],loc='upper right')
+plt.xlabel(r'$\eta (m^{-1})$')
+#plt.ylabel(r'Re($\varphi_k$)')
+plt.xlim(0,tosc_st)
+#plt.ylim(-35000,35000)
+plt.tight_layout()
+fig.savefig(root+'E_F_om.png')
+plt.show()
+
+#calculate the average of the final
+where = np.argwhere(tps > tosc)[0][0]
+n_f = beta2[where:]
+n_f_mean = np.mean(n_f)
+n_f_std = np.std(n_f)
+print (r'Final $|\beta|^{2}$: ', n_f_mean, ' +/- ', n_f_std)
+
+
+#plot the squares of beta against t
+fig = plt.figure()
+
+plt.plot(tps,beta2, color='teal', linewidth=2)
+plt.xlabel('$\eta$')
+plt.ylabel(r'$|\beta|^{2}$')
+#plt.ylim(-1,1)
+fig.savefig(root+'sq_beta.png')
+plt.show()
+
+
+#plot the squares of beta against t
+fig = plt.figure(figsize=(19.20,10.80))
+
+plt.plot(tps,log_n, color='darkblue', linewidth=4)
+plt.xlabel(r'$\eta (m^{-1})$')
+plt.ylabel(r'$\ln(N_k)$')
+#plt.xlim(-1,2*tosc+10)
+#plt.ylim(0,23)
+plt.tight_layout()
+fig.savefig(root+'log_n_osc.png')
+plt.show()
+
+#########################
+#save all the data to .txt files
+np.savetxt(root + "time.txt",tps, delimiter=",")
+np.savetxt(root + "up.txt",up, delimiter=",")
+np.savetxt(root + "dup.txt",dup, delimiter=",")
+np.savetxt(root + "um.txt",up, delimiter=",")
+np.savetxt(root + "dum.txt",dup, delimiter=",")
 
 
 
