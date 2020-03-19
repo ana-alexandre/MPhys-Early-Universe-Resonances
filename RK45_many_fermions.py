@@ -14,11 +14,11 @@ from scipy.integrate import solve_ivp
 mX = 100  #mass of fermion
 gphi0 = 1000   #constant
 m = 1 #frequency of inflaton oscillations (working in units of m = 1)
-kmin = 1  #first momentum to calculate
-kmax = 80 #m*gphi0 + 2*kmin  #number of particles created is calculated up  to a maximum value
-osc_max = 7
+kmin = 1.0625  #first momentum to calculate
+kmax = 40.0625 #m*gphi0 + 2*kmin  #number of particles created is calculated up  to a maximum value
+osc_max = 13
 osc_i = 0
-osc_f = 6
+osc_f = 12
 tmax = np.pi/m * (1/2 + osc_max)   #large time, equivalent to the +/- infinity limit
 tosc_st = np.pi/m * (1/2 + osc_i)  
 tosc = np.pi/m * (1/2 + osc_f)  #om2 oscillates between -tosc and +tosc (otherwise it is constant)
@@ -26,7 +26,7 @@ h_max = 1/mX**2  #step size adjusted to the largest frequency in the system
 atol = 1e-8  #absolute tolerance
 rtol = 1e-6  #relative tolerance
 no_t_pts = tmax*10
-no_k_pts = (kmax - kmin)*5
+no_k_pts = (kmax - kmin)*8
 Mpl = 1e6  #Planck mass
 #########################################
 
